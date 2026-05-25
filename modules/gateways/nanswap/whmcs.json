@@ -1,0 +1,24 @@
+{
+  "schema": "1.0",
+  "type": "whmcs-gateways",
+  "name": "nanswap",
+  "license": "proprietary",
+  "category": "payments",
+  "description": {
+    "name": "Nanswap Pay",
+    "tagline": "Accept crypto payments via Nanswap Pay."
+  },
+  "logo": {
+    "filename": "logo.png"
+  },
+  "authors": [
+    {
+      "name": "Nanswap",
+      "homepage": "https://nanswap.com/pay"
+    }
+  ],
+  "support": {
+    "email": "contact@nanswap.com",
+    "homepage": "https://nanswap.com/pay"
+  }
+}
