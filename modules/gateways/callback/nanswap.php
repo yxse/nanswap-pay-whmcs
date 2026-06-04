@@ -59,6 +59,8 @@ $status = isset($requestData['status']) ? $requestData['status'] : '';
 $payoutAmount = isset($requestData['payout_amount']) ? $requestData['payout_amount'] : 0;
 $payoutCurrency = isset($requestData['payout_currency']) ? $requestData['payout_currency'] : '';
 
+$payoutAmountFiat = isset($requestData['price_amount']) ? $requestData['price_amount'] : 0;
+$payoutCurrencyFiat = isset($requestData['price_currency']) ? $requestData['price_currency'] : '';
 $invoiceId = checkCbInvoiceID($invoiceId, $gatewayParams['name']);
 
 $invoice = Invoice::find($invoiceId);
@@ -67,13 +69,26 @@ if (is_null($invoice)) {
     die('Invoice not found');
 }
 
+// don't process if payout method is dynamic, as funds could be sent to a different address than the merchant's 
+if (isset($requestData['payout_method']) && $requestData['payout_method'] === 'dynamic') {
+    logTransaction($gatewayParams['name'], $post, 'Dynamic payout method not supported');
+    die('Unsupported payout method');
+}
+
+// if payout currency fiat doesn't match invoice currency, log and exit
+$invoiceCurrencyCode = $invoice->currencyCode;
+if ($payoutCurrencyFiat && strcasecmp($payoutCurrencyFiat, $invoiceCurrencyCode) !== 0) {
+    logTransaction($gatewayParams['name'], $post, "Fiat currency mismatch. Expected: {$invoiceCurrencyCode}, Received: {$payoutCurrencyFiat}");
+    die("Fiat currency mismatch. Expected: {$invoiceCurrencyCode}");
+}
+
 // Map NanShop statuses to WHMCS actions
 // NanShop statuses: waiting, processing, completed, underpaid, error, processing-error, expired
 switch ($status) {
     case 'completed':
         $upper = mb_strtoupper($payoutCurrency);
-        $message = "Invoice {$invoiceId} paid. Amount: {$payoutAmount} {$upper}. Transaction: {$transactionId}";
-        $invoice->addPaymentIfNotExists($payoutAmount, $transactionId, 0, $gatewayModuleName);
+        $message = "Invoice {$invoiceId} paid. Amount: {$payoutAmount} {$upper} (${$payoutAmountFiat} {$payoutCurrencyFiat}). Transaction: {$transactionId}";
+        $invoice->addPaymentIfNotExists($payoutAmountFiat, $transactionId, 0, $gatewayModuleName);
         logTransaction($gatewayParams['name'], $post, $message);
         break;
 

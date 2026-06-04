@@ -55,8 +55,8 @@ function nanswap_link($params)
     $orderId = 'WHMCS-' . $params['invoiceid'];
     $nanswapArgs = [
         'callbackUrl' => $ipnUrl,
-        'successURL' => $params['systemurl'].'viewinvoice.php?id='.$params['invoiceid'].'&paymentsuccess=true',
-        'cancelURL' => $params['systemurl'].'viewinvoice.php?id='.$params['invoiceid'].'&paymentfailed=true',
+        'successUrl' => $params['systemurl'].'viewinvoice.php?id='.$params['invoiceid'].'&paymentsuccess=true',
+        'cancelUrl' => $params['systemurl'].'viewinvoice.php?id='.$params['invoiceid'].'&paymentfailed=true',
         'dataSource' => 'whmcs',
         'priceCurrency' => mb_strtoupper($params['currency']),
         'publicKey' => $params['apiKey'],
