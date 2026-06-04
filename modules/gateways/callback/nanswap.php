@@ -52,15 +52,15 @@ if ($requestData === null) {
     die('Invalid payload');
 }
 
-$orderId = isset($requestData['order_id']) ? $requestData['order_id'] : '';
+$orderId = isset($requestData['invoicePartnerId']) ? $requestData['invoicePartnerId'] : '';
 $invoiceId = str_replace('WHMCS-', '', $orderId);
-$transactionId = isset($requestData['transaction_id']) ? $requestData['transaction_id'] : '';
+$transactionId = isset($requestData['invoiceId']) ? $requestData['invoiceId'] : '';
 $status = isset($requestData['status']) ? $requestData['status'] : '';
-$payoutAmount = isset($requestData['payout_amount']) ? $requestData['payout_amount'] : 0;
-$payoutCurrency = isset($requestData['payout_currency']) ? $requestData['payout_currency'] : '';
+$payoutAmount = isset($requestData['payoutAmount']) ? $requestData['payoutAmount'] : 0;
+$payoutCurrency = isset($requestData['payoutCurrency']) ? $requestData['payoutCurrency'] : '';
 
-$payoutAmountFiat = isset($requestData['price_amount']) ? $requestData['price_amount'] : 0;
-$payoutCurrencyFiat = isset($requestData['price_currency']) ? $requestData['price_currency'] : '';
+$payoutAmountFiat = isset($requestData['priceAmount']) ? $requestData['priceAmount'] : 0;
+$payoutCurrencyFiat = isset($requestData['priceCurrency']) ? $requestData['priceCurrency'] : '';
 $invoiceId = checkCbInvoiceID($invoiceId, $gatewayParams['name']);
 
 $invoice = Invoice::find($invoiceId);
@@ -70,7 +70,7 @@ if (is_null($invoice)) {
 }
 
 // don't process if payout method is dynamic, as funds could be sent to a different address than the merchant's 
-if (isset($requestData['payout_method']) && $requestData['payout_method'] === 'dynamic') {
+if (isset($requestData['payoutMethod']) && $requestData['payoutMethod'] === 'dynamic') {
     logTransaction($gatewayParams['name'], $post, 'Dynamic payout method not supported');
     die('Unsupported payout method');
 }
@@ -101,8 +101,8 @@ switch ($status) {
         break;
 
     case 'underpaid':
-        $amountReceived = isset($requestData['amount_received']) ? $requestData['amount_received'] : 0;
-        $message = "Invoice {$invoiceId} underpaid. Received: {$amountReceived}. Transaction: {$transactionId}";
+        $amountFrom = isset($requestData['amountFrom']) ? $requestData['amountFrom'] : 0;
+        $message = "Invoice {$invoiceId} underpaid. Received: {$amountFrom}. Transaction: {$transactionId}";
         logTransaction($gatewayParams['name'], $post, $message);
         if ($invoice->getBalanceAttribute()) {
             $invoice->status = 'Unpaid';
